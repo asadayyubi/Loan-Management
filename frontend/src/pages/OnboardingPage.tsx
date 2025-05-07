@@ -75,12 +75,12 @@ export const OnboardingPage = () => {
             />
             <FormInput
               name="gstin"
-              label="GSTIN (Optional)"
+              label="GSTIN"
               placeholder="22AAAAA0000A1Z5"
             />
             <FormInput
               name="udyam"
-              label="UDYAM (Optional)"
+              label="UDYAM"
               placeholder="UDYAM-XX-00-0000000"
             />
 

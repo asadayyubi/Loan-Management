@@ -14,9 +14,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    CORS(app, resources={r"/api/*": {"origins": "http://192.168.1.7:5174"}})
-
-    # Register all routes from routes/__init__.py
+    CORS(app)
     from app.routes import register_routes
 
     register_routes(app)
