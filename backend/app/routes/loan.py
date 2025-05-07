@@ -26,7 +26,6 @@ def create_loan():
     db.session.add(new_loan)
     db.session.commit()
 
-    # Generate EMI schedule
     emi_schedule = calculate_emi_schedule(
         loan_amount=new_loan.amount,
         annual_interest_rate=new_loan.interest_rate,
@@ -39,6 +38,7 @@ def create_loan():
             EMISchedule(
                 loan_id=new_loan.id,
                 due_date=emi["due_date"],
+                outstanding_amount=emi["outstanding"],
                 amount=emi["amount"],
                 principal=emi["principal"],
                 interest=emi["interest"],
@@ -62,30 +62,26 @@ def create_loan():
 
 @loan_bp.route("/api/loans/<int:loan_id>/ledger", methods=["GET"])
 def get_loan_ledger(loan_id):
-    # Fetch loan with user details in a single query using joinedload
     loan = (
         Loan.query.options(joinedload(Loan.user)).filter_by(id=loan_id).first_or_404()
     )
-
-    # Get all EMIs ordered by due date
     emis = (
         EMISchedule.query.filter_by(loan_id=loan_id)
         .order_by(EMISchedule.due_date)
         .all()
     )
 
-    # Calculate amounts
     today = date.today()
     paid_emis = [emi for emi in emis if emi.status == "paid"]
     pending_emis = [emi for emi in emis if emi.status == "pending"]
+    overdue_emis = [emi for emi in pending_emis if emi.due_date < today]
 
     total_remaining = sum(emi.amount for emi in pending_emis)
     total_paid = sum(emi.amount for emi in paid_emis)
 
-    # Find next EMI (first pending EMI after today)
     next_emi = next((emi for emi in pending_emis if emi.due_date >= today), None)
-
-    # Build response
+    if not next_emi and overdue_emis:
+        next_emi = overdue_emis[0]
     response_data = {
         "user_details": {
             "name": loan.user.name,
@@ -108,11 +104,11 @@ def get_loan_ledger(loan_id):
         },
         "next_emi": (
             {
-                "due_date": next_emi.due_date.isoformat() if next_emi else None,
-                "amount": next_emi.amount if next_emi else None,
-                "principal": next_emi.principal if next_emi else None,
-                "interest": next_emi.interest if next_emi else None,
-                "is_overdue": next_emi.due_date < today if next_emi else False,
+                "due_date": next_emi.due_date.isoformat(),
+                "amount": next_emi.amount,
+                "principal": next_emi.principal,
+                "interest": next_emi.interest,
+                "is_overdue": next_emi.due_date < today,
             }
             if next_emi
             else None
@@ -126,11 +122,13 @@ def get_loan_ledger(loan_id):
             ),
             "next_payment_date": next_emi.due_date.isoformat() if next_emi else None,
             "payments_remaining": len(pending_emis),
+            "overdue_payments": len(overdue_emis),
         },
         "ledger": [
             {
                 "emi_id": emi.id,
                 "due_date": emi.due_date.isoformat(),
+                "outstanding": emi.outstanding_amount,
                 "amount": emi.amount,
                 "principal": emi.principal,
                 "interest": emi.interest,
@@ -159,7 +157,9 @@ def download_ledger_csv(loan_id):
 
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Due Date", "Amount", "Principal", "Interest", "Status"])
+    writer.writerow(
+        ["Due Date", "Amount", "Principal", "Interest", "Outstanding Amount", "Status"]
+    )
 
     for emi in emis:
         writer.writerow(
@@ -168,6 +168,7 @@ def download_ledger_csv(loan_id):
                 f"{emi.amount:.2f}",
                 f"{emi.principal:.2f}",
                 f"{emi.interest:.2f}",
+                f"{emi.outstanding_amount:.2f}",
                 emi.status,
             ]
         )

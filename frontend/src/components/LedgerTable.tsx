@@ -24,7 +24,10 @@ export const LedgerTable = ({
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amount (₹)
+                Outstanding (₹)
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                EMI (₹)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Principal (₹)
@@ -68,6 +71,9 @@ export const LedgerTable = ({
                         ? "Overdue"
                         : "Pending"}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    ₹{emi?.outstanding?.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     ₹{emi.amount.toFixed(2)}

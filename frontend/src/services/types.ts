@@ -53,6 +53,7 @@ export interface LoanDetailsType {
 export interface EMIRecord {
   id: number;
   due_date: string;
+  outstanding: number;
   amount: number;
   principal: number;
   interest: number;

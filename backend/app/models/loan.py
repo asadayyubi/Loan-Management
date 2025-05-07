@@ -31,6 +31,7 @@ class EMISchedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     loan_id = db.Column(db.Integer, db.ForeignKey("loans.id"), nullable=False)
     due_date = db.Column(db.Date, nullable=False)
+    outstanding_amount = db.Column(db.Float, default=0.0)
     amount = db.Column(db.Float, nullable=False)
     principal = db.Column(db.Float)
     interest = db.Column(db.Float)

@@ -54,9 +54,9 @@ export const NextPaymentCard = ({ emi }: { emi: EMIRecord | null }) => {
         </div>
       </div>
 
-      <button className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+      {/* <button className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
         {"Pay Now"}
-      </button>
+      </button> */}
     </div>
   );
 };

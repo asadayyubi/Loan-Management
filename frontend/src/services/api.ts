@@ -74,16 +74,18 @@ export const getLoanLedger = async (loanId: number) => {
 
 export const downloadLedgerCSV = async (loanId: number) => {
   try {
-    const response = await axios.get(`/loans/${loanId}/csv`, {
+    const response = await axios.get(`${API_URL}/loans/${loanId}/csv`, {
       responseType: "blob",
     });
+    console.log(response, "response");
+
     return response.data;
   } catch (error) {
     throw error;
   }
 };
 
-/* ==================== AUTH APIs (For Future) ==================== */
+/* ==================== AUTH APIs ==================== */
 export const login = async (credentials: { pan: string; password: string }) => {
   try {
     const response = await axios.post("/auth/login", credentials);
